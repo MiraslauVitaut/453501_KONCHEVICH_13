@@ -130,49 +130,34 @@ REST_FRAMEWORK = {
 # Logging
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'DEBUG')
 
+# Логирование: на Render/продакшен — только консоль, локально — консоль + файл
+import os as _os
+_LOGS_DIR = BASE_DIR / 'logs'
+_USE_FILE_LOGGING = _os.path.isdir(str(_LOGS_DIR))
+
+_log_handlers = {'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'}}
+_handler_list = ['console']
+
+if _USE_FILE_LOGGING:
+    _log_handlers['file'] = {
+        'class': 'logging.FileHandler',
+        'filename': str(_LOGS_DIR / 'realty.log'),
+        'formatter': 'verbose',
+    }
+    _handler_list = ['console', 'file']
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {asctime} {message}',
-            'style': '{',
-        },
+        'verbose': {'format': '{levelname} {asctime} {module} {message}', 'style': '{'},
+        'simple': {'format': '{levelname} {asctime} {message}', 'style': '{'},
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'realty.log',
-            'formatter': 'verbose',
-        },
-    },
-    'root': {
-        'handlers': ['console', 'file'],
-        'level': LOG_LEVEL,
-    },
+    'handlers': _log_handlers,
+    'root': {'handlers': _handler_list, 'level': LOG_LEVEL},
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'WARNING',
-            'propagate': False,
-        },
-        'properties': {
-            'handlers': ['console', 'file'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
-        'users': {
-            'handlers': ['console', 'file'],
-            'level': LOG_LEVEL,
-            'propagate': False,
-        },
+        'django': {'handlers': _handler_list, 'level': 'WARNING', 'propagate': False},
+        'properties': {'handlers': _handler_list, 'level': LOG_LEVEL, 'propagate': False},
+        'users': {'handlers': _handler_list, 'level': LOG_LEVEL, 'propagate': False},
     },
 }
