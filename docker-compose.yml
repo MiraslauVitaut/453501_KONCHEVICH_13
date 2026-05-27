@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  web:
+    build: .
+    image: realty-agency:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - media_data:/app/media
+      - log_data:/app/logs
+    environment:
+      - DJANGO_SETTINGS_MODULE=realty_agency.settings
+      - LOG_LEVEL=INFO
+      - DATABASE_URL=postgresql://realty_user:realty_pass@db:5432/realty_db
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py seed_data --skip-if-exists &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: realty_db
+      POSTGRES_USER: realty_user
+      POSTGRES_PASSWORD: realty_pass
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U realty_user -d realty_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  pg_data:
+  media_data:
+  log_data:

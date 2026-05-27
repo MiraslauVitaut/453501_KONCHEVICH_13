@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% block title %}Статистика{% endblock %}
+{% block content %}
+<h2><i class="bi bi-bar-chart-line"></i> Статистика агентства</h2>
+
+<!-- Таймзона + текстовый календарь -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card border-0 shadow-sm p-3"><small class="text-muted">UTC (в БД)</small><div class="font-monospace fw-bold">{{ utc_now|date:"d/m/Y H:i:s" }} UTC</div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm p-3"><small class="text-muted">Europe/Minsk</small><div class="font-monospace fw-bold text-primary">{{ local_now|date:"d/m/Y H:i:s" }}</div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm p-3"><small class="text-muted">Хранение</small><div class="small">В БД — UTC, показ — локальное</div></div></div>
+    <div class="col-md-3"><div class="card border-0 shadow-sm p-3"><small class="text-muted">Календарь (Python)</small><pre class="mb-0" style="font-size:.7rem">{{ text_calendar }}</pre></div></div>
+</div>
+
+<!-- Таймзона и календарь -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted"><i class="bi bi-clock-history"></i> Время UTC</small>
+            <div class="font-monospace">{% now "d/m/Y H:i" %} UTC</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted"><i class="bi bi-geo-alt"></i> Время сервера</small>
+            <div class="font-monospace text-primary">{% now "d/m/Y H:i" %}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted"><i class="bi bi-calendar3"></i> Сегодня</small>
+            <div class="font-monospace text-success">{% now "d/m/Y" %}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm p-3 d-flex justify-content-center align-items-center">
+            <a href="{% url 'properties:chart_python' %}" class="btn btn-success w-100">
+                <i class="bi bi-graph-up"></i> График Python/matplotlib
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Ключевые показатели -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm p-3">
+            <div class="text-muted small">Завершённых сделок</div>
+            <div class="fs-3 fw-bold text-primary">{{ deals_count }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm p-3">
+            <div class="text-muted small">Общая сумма сделок</div>
+            <div class="fs-3 fw-bold text-success">${{ total_amount|floatformat:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm p-3">
+            <div class="text-muted small">Комиссия агентства</div>
+            <div class="fs-3 fw-bold text-warning">${{ total_commission|floatformat:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stat-card shadow-sm p-3">
+            <div class="text-muted small">Средняя сделка</div>
+            <div class="fs-3 fw-bold text-info">${{ avg_amount|floatformat:0 }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистические показатели — среднее, медиана, мода -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header fw-bold" style="background:var(--primary);color:white">
+        <i class="bi bi-calculator"></i> Статистические показатели по суммам сделок
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div class="text-muted small mb-1">Среднее (Mean)</div>
+                    <div class="fs-3 fw-bold text-primary">${{ avg_amount|floatformat:0 }}</div>
+                    <small class="text-muted">Сумма всех сделок / количество</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div class="text-muted small mb-1">Медиана (Median)</div>
+                    <div class="fs-3 fw-bold text-success">${{ median_amount|floatformat:0 }}</div>
+                    <small class="text-muted">Центральное значение при сортировке</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div class="text-muted small mb-1">Мода (Mode)</div>
+                    <div class="fs-3 fw-bold text-warning">${{ mode_amount|floatformat:0 }}</div>
+                    <small class="text-muted">Наиболее часто встречающееся значение</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Статистика по возрасту -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header fw-bold" style="background:#27ae60;color:white">
+        <i class="bi bi-people"></i> Статистика по возрасту пользователей ({{ ages_count }} чел.)
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div class="text-muted small mb-1">Средний возраст</div>
+                    <div class="fs-3 fw-bold text-success">{{ avg_age }} лет</div>
+                    <small class="text-muted">Среднее арифметическое по всем пользователям</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-0 bg-light p-3 text-center h-100">
+                    <div class="text-muted small mb-1">Медиана возраста</div>
+                    <div class="fs-3 fw-bold text-info">{{ median_age }} лет</div>
+                    <small class="text-muted">Центральное значение при сортировке по возрасту</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Диаграмма по статусам -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <h6 class="fw-bold mb-3">Объекты по статусу</h6>
+            <canvas id="statusChart" height="220"></canvas>
+        </div>
+    </div>
+    <!-- Диаграмма по типу сделки -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <h6 class="fw-bold mb-3">Продажа vs Аренда</h6>
+            <canvas id="typeChart" height="220"></canvas>
+        </div>
+    </div>
+    <!-- Диаграмма по городам -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <h6 class="fw-bold mb-3">Объекты по городам (топ 5)</h6>
+            <canvas id="cityChart" height="220"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Динамика сделок по месяцам -->
+<div class="card border-0 shadow-sm p-4 mb-4">
+    <h6 class="fw-bold mb-3">Динамика сделок по месяцам</h6>
+    <canvas id="monthlyChart" height="100"></canvas>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- По категориям -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3">
+            <h6 class="fw-bold mb-3">Объекты по категориям</h6>
+            <canvas id="categoryChart" height="200"></canvas>
+        </div>
+    </div>
+    <!-- Топ агентов -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm p-3">
+            <h6 class="fw-bold mb-3">Топ-5 агентов по сумме сделок</h6>
+            {% if top_agents %}
+            <table class="table table-sm">
+                <thead><tr><th>Агент</th><th>Сделок</th><th>Сумма</th></tr></thead>
+                <tbody>
+                {% for agent in top_agents %}
+                <tr>
+                    <td>{{ agent.full_name }}</td>
+                    <td>{{ agent.deal_count }}</td>
+                    <td>${{ agent.deal_sum|default:0|floatformat:0 }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">Данных нет.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Список клиентов в алфавитном порядке с суммой покупок -->
+<div class="card border-0 shadow-sm p-3 mb-4">
+    <h6 class="fw-bold mb-3"><i class="bi bi-people"></i> Клиенты в алфавитном порядке (с суммой покупок)</h6>
+    <div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead><tr><th>ФИО</th><th>Телефон</th><th>Email</th><th>Сделок</th><th>Сумма покупок ($)</th></tr></thead>
+        <tbody>
+        {% for c in clients_sorted %}
+        <tr>
+            <td>{{ c.full_name }}</td>
+            <td>{{ c.phone }}</td>
+            <td>{{ c.email }}</td>
+            <td>{{ c.deals_count|default:0 }}</td>
+            <td>${{ c.total_spent|default:0|floatformat:0 }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-muted text-center">Клиентов нет.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<!-- Список объектов в алфавитном порядке -->
+<div class="card border-0 shadow-sm p-3 mb-4">
+    <h6 class="fw-bold mb-3">Все объекты (алфавитный порядок)</h6>
+    <div class="table-responsive">
+    <table class="table table-sm table-striped">
+        <thead><tr><th>Название</th><th>Категория</th><th>Город</th><th>Тип</th><th>Цена</th><th>Площадь</th><th>Статус</th></tr></thead>
+        <tbody>
+        {% for p in properties_sorted %}
+        <tr>
+            <td><a href="{% url 'properties:detail' p.pk %}">{{ p.title }}</a></td>
+            <td>{{ p.category }}</td>
+            <td>{{ p.city }}</td>
+            <td>{{ p.get_transaction_type_display }}</td>
+            <td>${{ p.price }}</td>
+            <td>{{ p.area }} м²</td>
+            <td><span class="badge {% if p.status == 'available' %}bg-success{% elif p.status == 'sold' %}bg-danger{% elif p.status == 'rented' %}bg-info{% else %}bg-warning{% endif %}">{{ p.get_status_display }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Данные из Django
+const byStatus = JSON.parse('{{ by_status|escapejs }}');
+const byType = JSON.parse('{{ by_type|escapejs }}');
+const byCity = JSON.parse('{{ by_city|escapejs }}');
+const byCategory = JSON.parse('{{ by_category|escapejs }}');
+const monthlyDeals = JSON.parse('{{ monthly_deals|escapejs }}');
+
+const STATUS_LABELS = {available:'Доступно',sold:'Продано',rented:'Сдано',reserved:'Зарезервировано'};
+const TYPE_LABELS = {sale:'Продажа',rent:'Аренда'};
+const COLORS = ['#1a3a5c','#e67e22','#27ae60','#e74c3c','#3498db','#9b59b6','#f1c40f'];
+
+// Статусы
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: byStatus.map(d => STATUS_LABELS[d.status] || d.status),
+        datasets: [{data: byStatus.map(d => d.cnt), backgroundColor: COLORS}]
+    },
+    options: {plugins: {legend: {position:'bottom'}}}
+});
+
+// Тип
+new Chart(document.getElementById('typeChart'), {
+    type: 'pie',
+    data: {
+        labels: byType.map(d => TYPE_LABELS[d.transaction_type] || d.transaction_type),
+        datasets: [{data: byType.map(d => d.cnt), backgroundColor: ['#1a3a5c','#e67e22']}]
+    },
+    options: {plugins: {legend: {position:'bottom'}}}
+});
+
+// Города
+const cityTop = byCity.slice(0,5);
+new Chart(document.getElementById('cityChart'), {
+    type: 'bar',
+    data: {
+        labels: cityTop.map(d => d.city),
+        datasets: [{label:'Объектов', data: cityTop.map(d => d.cnt), backgroundColor: '#1a3a5c'}]
+    },
+    options: {plugins: {legend: {display:false}}, scales: {y: {beginAtZero:true}}}
+});
+
+// Категории
+new Chart(document.getElementById('categoryChart'), {
+    type: 'bar',
+    data: {
+        labels: byCategory.map(d => d.category__name),
+        datasets: [{label:'Объектов', data: byCategory.map(d => d.cnt), backgroundColor: COLORS}]
+    },
+    options: {indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{beginAtZero:true}}}
+});
+
+// Помесячно + линейный тренд
+const trendData = JSON.parse('{{ trend_json|escapejs }}');
+const trendMonths = {{ trend_months_count }};
+
+if (monthlyDeals.length > 0) {
+    // Метки: реальные месяцы + прогнозные (следующие 3)
+    const realLabels = monthlyDeals.map(d => {
+        if (!d.month) return '';
+        const parts = d.month.split('/');
+        if (parts.length === 2) {
+            const months = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+            return months[parseInt(parts[0])-1] + ' ' + parts[1];
+        }
+        return d.month;
+    });
+    // Добавляем 3 прогнозных метки
+    const forecastLabels = ['прогноз+1','прогноз+2','прогноз+3'];
+    const allLabels = [...realLabels, ...forecastLabels.slice(0, trendData.length - realLabels.length)];
+
+    new Chart(document.getElementById('monthlyChart'), {
+        type: 'line',
+        data: {
+            labels: allLabels,
+            datasets: [
+                {label:'Сделок', data: monthlyDeals.map(d => d.cnt), borderColor:'#1a3a5c', tension:0.3, yAxisID:'y'},
+                {label:'Сумма ($)', data: monthlyDeals.map(d => d.total || 0), borderColor:'#e67e22', tension:0.3, yAxisID:'y1'},
+                {label:'Тренд ($)', data: trendData, borderColor:'#27ae60', borderDash:[5,5], tension:0, pointRadius:3, yAxisID:'y1', fill:false}
+            ]
+        },
+        options: {
+            scales: {
+                y: {beginAtZero:true, position:'left', title:{display:true,text:'Кол-во сделок'}},
+                y1: {beginAtZero:true, position:'right', title:{display:true,text:'Сумма ($)'}, grid:{drawOnChartArea:false}}
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

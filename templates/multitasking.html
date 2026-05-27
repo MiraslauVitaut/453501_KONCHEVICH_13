@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Многозадачность — IoT Система | РиэлтерПлюс</title>
+    <!-- БЕЗ CSS/Bootstrap — требование задания -->
+</head>
+<body>
+
+<h1>Дополнительное задание: Многозадачность в Python</h1>
+<p>Вариант 13 — IoT Система мониторинга офисов риэлтерского агентства</p>
+<hr>
+
+<h2>Выбор задачи:</h2>
+<p>
+    <a href="?run=a">[A] Threading — Опрос датчиков температуры</a> |
+    <a href="?run=b">[B] Multiprocessing — Обработка кадра камеры</a> |
+    <a href="?run=c">[C] Asyncio — Управление смарт-лампами</a> |
+    <a href="?run=all">[ВСЕ] Запустить все три</a> |
+    <a href="?">Сброс</a>
+</p>
+<hr>
+
+
+<!-- ═══ A: Threading ═══ -->
+{% if threading_result %}
+<h2>A. Threading — Опрос датчиков температуры (5 потоков)</h2>
+
+<p>
+    <strong>Концепция:</strong> 5 потоков одновременно опрашивают датчики в разных
+    офисах агентства. <code>threading.Lock</code> защищает общий список показаний
+    от состояния гонки (race condition).
+</p>
+
+<p>
+    Всего показаний: <strong>{{ threading_result.total_readings }}</strong> |
+    Средняя температура: <strong>{{ threading_result.avg_temp }}°C</strong> |
+    Время выполнения: <strong>{{ threading_result.elapsed }}с</strong>
+</p>
+
+<h3>Журнал опроса:</h3>
+<pre>{% for line in threading_result.log %}{{ line }}
+{% endfor %}</pre>
+
+<h3>Показания датчиков:</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Датчик</th>
+        <th>Офис</th>
+        <th>Температура</th>
+        <th>Влажность</th>
+        <th>Статус</th>
+    </tr>
+    {% for r in threading_result.readings %}
+    <tr>
+        <td>{{ r.sensor }}</td>
+        <td>{{ r.office }}</td>
+        <td>{{ r.temp }}°C</td>
+        <td>{{ r.humidity }}%</td>
+        <td>{{ r.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h3>Тревоги:</h3>
+<pre>{% for alert in threading_result.alerts %}{{ alert }}
+{% endfor %}</pre>
+
+<p>
+    <strong>Зачем Lock?</strong> Без блокировки два потока могут одновременно
+    записывать в список <code>readings</code> — данные перемешаются или потеряются.
+    Lock гарантирует: только один поток в критической секции одновременно.
+</p>
+<hr>
+{% endif %}
+
+
+<!-- ═══ B: Multiprocessing ═══ -->
+{% if mp_result %}
+<h2>B. Multiprocessing — Обработка кадра камеры наблюдения (4 процесса)</h2>
+
+<p>
+    <strong>Концепция:</strong> Кадр {{ mp_result.frame_size }} пикселей делится
+    на 4 сегмента. Каждый обрабатывается в отдельном процессе (коррекция яркости,
+    гамма-коррекция). Обходит GIL — настоящий параллелизм на CPU.
+</p>
+
+<p>
+    Обработано пикселей: <strong>{{ mp_result.total_pixels }}</strong> |
+    Средняя яркость: <strong>{{ mp_result.overall_brightness }}/255</strong> |
+    Воркеров: <strong>{{ mp_result.workers }}</strong> |
+    Время: <strong>{{ mp_result.elapsed }}с</strong>
+</p>
+
+<h3>Результаты по сегментам:</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>Сегмент</th>
+        <th>Пикселей</th>
+        <th>Ср. яркость</th>
+        <th>Тёмных (&lt;64)</th>
+        <th>Светлых (&gt;192)</th>
+    </tr>
+    {% for r in mp_result.results %}
+    <tr>
+        <td>{{ r.label }}</td>
+        <td>{{ r.pixels_processed }}</td>
+        <td>{{ r.avg_brightness }}</td>
+        <td>{{ r.dark_pixels }}</td>
+        <td>{{ r.bright_pixels }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p>
+    <strong>Зачем Multiprocessing?</strong> Threading не помогает для CPU-задач —
+    GIL не позволяет двум потокам Python работать одновременно. ProcessPoolExecutor
+    создаёт отдельные процессы с независимыми интерпретаторами — реальный параллелизм.
+</p>
+<hr>
+{% endif %}
+
+
+<!-- ═══ C: Asyncio ═══ -->
+{% if asyncio_result %}
+<h2>C. Asyncio — Управление 10 смарт-лампами офиса (asyncio.gather)</h2>
+
+<p>
+    <strong>Концепция:</strong> 10 смарт-ламп в офисах агентства включаются
+    параллельно через <code>asyncio.gather</code>. Один поток, один процесс —
+    event loop переключается между ожиданиями сетевых ответов от ламп.
+</p>
+
+<p>
+    Всего ламп: <strong>{{ asyncio_result.total }}</strong> |
+    Успешно: <strong>{{ asyncio_result.success }}</strong> |
+    Ошибок: <strong>{{ asyncio_result.failed }}</strong> |
+    Среднее время отклика: <strong>{{ asyncio_result.avg_response_ms }} мс</strong> |
+    Общее время: <strong>{{ asyncio_result.elapsed }}с</strong>
+</p>
+
+<h3>Статус ламп:</h3>
+<table border="1" cellpadding="5">
+    <tr>
+        <th>#</th>
+        <th>Помещение</th>
+        <th>Команда</th>
+        <th>Статус</th>
+        <th>Отклик</th>
+        <th>Яркость</th>
+    </tr>
+    {% for r in asyncio_result.results %}
+    <tr>
+        <td>{{ r.lamp_id }}</td>
+        <td>{{ r.room }}</td>
+        <td>{{ r.action }}</td>
+        <td>{{ r.status }}</td>
+        <td>{{ r.response_ms }} мс</td>
+        <td>{{ r.brightness }}%</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p>
+    <strong>Зачем Asyncio?</strong> Если включать лампы последовательно — ждём
+    каждую по очереди (10 × ~100мс = ~1с). С asyncio.gather все 10 команд отправляются
+    одновременно — ждём только самую медленную (~100-200мс).
+    Один поток, никаких накладных расходов на создание потоков/процессов.
+</p>
+<hr>
+{% endif %}
+
+
+{% if not threading_result and not mp_result and not asyncio_result %}
+<p>Выберите задачу выше для запуска демонстрации.</p>
+{% endif %}
+
+<p><a href="/">← Вернуться на главную</a></p>
+
+</body>
+</html>

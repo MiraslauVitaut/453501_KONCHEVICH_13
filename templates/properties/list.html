@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Объекты недвижимости{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-houses"></i> Объекты недвижимости</h2>
+    {% if user.is_staff or user.role == 'employee' %}
+    <a href="{% url 'properties:create' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Добавить</a>
+    {% endif %}
+</div>
+
+<form method="get" class="card border-0 shadow-sm p-3 mb-4">
+    <div class="row g-2">
+        <div class="col-md-3">{{ form.search }}</div>
+        <div class="col-md-2">
+            <select name="category" class="form-select">
+                <option value="">Все категории</option>
+                {% for cat in categories %}<option value="{{ cat.id }}" {% if request.GET.category == cat.id|stringformat:'s' %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">{{ form.transaction_type }}</div>
+        <div class="col-md-2">{{ form.price_min }}</div>
+        <div class="col-md-2">{{ form.price_max }}</div>
+        <div class="col-md-1">{{ form.rooms }}</div>
+    </div>
+    <div class="row g-2 mt-1">
+        <div class="col-md-3">{{ form.city }}</div>
+        <div class="col-md-3">{{ form.sort }}</div>
+        <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Найти</button></div>
+        <div class="col-md-2"><a href="{% url 'properties:list' %}" class="btn btn-outline-secondary w-100">Сброс</a></div>
+    </div>
+</form>
+
+<p class="text-muted">Найдено: <strong>{{ page_obj.paginator.count }}</strong> объектов</p>
+<div class="row g-3">
+{% for prop in page_obj %}
+<div class="col-md-4">
+    <div class="card property-card h-100 border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex gap-2 mb-2">
+                <span class="badge {% if prop.transaction_type == 'sale' %}bg-primary{% else %}bg-success{% endif %}">{{ prop.get_transaction_type_display }}</span>
+                <span class="badge {% if prop.status == 'available' %}bg-success{% elif prop.status == 'sold' %}bg-danger{% elif prop.status == 'rented' %}bg-info{% else %}bg-warning{% endif %}">{{ prop.get_status_display }}</span>
+            </div>
+            <h6 class="fw-bold">{{ prop.title }}</h6>
+            <p class="text-muted small"><i class="bi bi-geo-alt"></i> {{ prop.city }}{% if prop.district %}, {{ prop.district }}{% endif %}</p>
+            <p class="small text-muted">{{ prop.address }}</p>
+            <p class="small">{{ prop.area }} м² | {{ prop.rooms }} комн.{% if prop.floor %} | {{ prop.floor }} эт.{% endif %}</p>
+            <hr class="my-2">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong class="text-primary fs-6">${{ prop.price }}</strong>
+                    <small class="text-muted d-block">${{ prop.price_per_sqm }}/м²</small>
+                </div>
+                <a href="{% url 'properties:detail' prop.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="col-12"><div class="alert alert-info">По вашему запросу ничего не найдено.</div></div>
+{% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-4"><ul class="pagination justify-content-center">
+{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>{% endif %}
+<li class="page-item active"><span class="page-link">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span></li>
+{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}

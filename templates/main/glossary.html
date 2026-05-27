@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Словарь терминов{% endblock %}
+{% block content %}
+<h2><i class="bi bi-book"></i> Словарь терминов</h2>
+<div class="accordion" id="glossaryAccordion">
+{% for term in terms %}
+<div class="accordion-item">
+    <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#term{{ term.pk }}">
+            <strong>{{ term.term }}</strong>
+            <small class="text-muted ms-3">{{ term.created_at|date:"d/m/Y" }}</small>
+        </button>
+    </h2>
+    <div id="term{{ term.pk }}" class="accordion-collapse collapse">
+        <div class="accordion-body">{{ term.definition }}</div>
+    </div>
+</div>
+{% empty %}<p class="text-muted mt-3">Словарь пуст.</p>
+{% endfor %}
+</div>
+{% endblock %}
