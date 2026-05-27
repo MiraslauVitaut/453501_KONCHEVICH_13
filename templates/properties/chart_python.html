@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Графики (Python/matplotlib){% endblock %}
+{% block content %}
+
+<h2><i class="bi bi-graph-up"></i> Статистика — графики средствами Python</h2>
+<p class="text-muted">Графики сгенерированы на сервере с помощью <strong>matplotlib</strong> (Python), не JS.</p>
+
+<!-- Таймзона и дата/время -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3 h-100">
+            <h6 class="fw-bold"><i class="bi bi-clock-history"></i> Время UTC</h6>
+            <div class="fs-5 font-monospace text-secondary">{{ utc_now|date:"d/m/Y H:i:s" }} UTC</div>
+            <small class="text-muted">Хранится в базе данных (USE_TZ=True)</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3 h-100">
+            <h6 class="fw-bold"><i class="bi bi-geo-alt"></i> Время сервера ({{ timezone }})</h6>
+            <div class="fs-5 font-monospace text-primary">{{ local_now|date:"d/m/Y H:i:s" }}</div>
+            <small class="text-muted">Отображается в таймзоне приложения</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3 h-100">
+            <h6 class="fw-bold"><i class="bi bi-calendar3"></i> Текущий месяц</h6>
+            <pre class="mb-0" style="font-size:0.8rem; line-height:1.4;">{{ text_calendar }}</pre>
+        </div>
+    </div>
+</div>
+
+<!-- Основной график: сделки по месяцам -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="bi bi-bar-chart"></i> Динамика сделок — сгенерировано Python/matplotlib
+    </div>
+    <div class="card-body text-center">
+        <img src="data:image/png;base64,{{ chart_b64 }}"
+             alt="График сделок по месяцам"
+             class="img-fluid rounded"
+             style="max-width: 900px;">
+    </div>
+</div>
+
+<!-- Pie chart -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-header bg-success text-white">
+        <i class="bi bi-pie-chart"></i> Распределение по категориям — Python/matplotlib
+    </div>
+    <div class="card-body text-center">
+        <img src="data:image/png;base64,{{ pie_b64 }}"
+             alt="Распределение по категориям"
+             class="img-fluid rounded"
+             style="max-width: 700px;">
+    </div>
+</div>
+
+<div class="alert alert-info">
+    <strong>Техническая деталь:</strong> графики рендерятся на сервере через
+    <code>matplotlib.use('Agg')</code> (без GUI), конвертируются в PNG → base64
+    и вставляются прямо в HTML как <code>&lt;img src="data:image/png;base64,..."&gt;</code>.
+    Никакого JavaScript для построения графиков не используется.
+</div>
+
+<a href="{% url 'properties:statistics' %}" class="btn btn-outline-primary">
+    <i class="bi bi-arrow-left"></i> Вернуться к статистике
+</a>
+
+{% endblock %}

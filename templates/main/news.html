@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Новости{% endblock %}
+{% block content %}
+<h2><i class="bi bi-newspaper"></i> Новости</h2>
+<div class="row g-3">
+{% for article in page_obj %}
+<div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+        {% if article.image %}<img src="{{ article.image.url }}" class="card-img-top" style="height:180px;object-fit:cover">{% endif %}
+        <div class="card-body">
+            <h5>{{ article.title }}</h5>
+            <p class="text-muted small">{{ article.created_at|date:"d/m/Y" }}</p>
+            <p>{{ article.summary }}</p>
+            <a href="{% url 'properties:news_detail' article.pk %}" class="btn btn-sm btn-primary">Читать далее</a>
+        </div>
+    </div>
+</div>
+{% empty %}<div class="col"><p class="text-muted">Новостей пока нет.</p></div>
+{% endfor %}
+</div>
+{% if page_obj.has_other_pages %}
+<nav class="mt-4"><ul class="pagination">
+{% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>{% endif %}
+<li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+{% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>{% endif %}
+</ul></nav>
+{% endif %}
+{% endblock %}

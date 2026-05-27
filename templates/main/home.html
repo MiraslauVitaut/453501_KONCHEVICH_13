@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}РиэлтерПлюс — Главная{% endblock %}
+{% block content %}
+<div class="row g-4 mb-5">
+    <div class="col-md-8">
+        <div class="p-5 rounded-3" style="background: linear-gradient(135deg,#1a3a5c,#2c5282); color:white;">
+            <h1 class="display-5 fw-bold"><i class="bi bi-building"></i> РиэлтерПлюс</h1>
+            <p class="lead">Ваш надёжный партнёр в мире недвижимости Беларуси</p>
+            <a href="{% url 'properties:list' %}" class="btn btn-warning btn-lg mt-2">
+                <i class="bi bi-search"></i> Найти объект
+            </a>
+            <a href="{% url 'properties:contacts' %}" class="btn btn-outline-light btn-lg mt-2 ms-2">Связаться с нами</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        {% if exchange_data %}
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-dark text-white"><i class="bi bi-currency-exchange"></i> Курс валют (1 USD)</div>
+            <div class="card-body">
+                <table class="table table-sm mb-0">
+                    <tr><td><strong>BYN</strong></td><td class="text-end">{{ exchange_data.BYN }}</td></tr>
+                    <tr><td><strong>EUR</strong></td><td class="text-end">{{ exchange_data.EUR }}</td></tr>
+                    <tr><td><strong>RUB</strong></td><td class="text-end">{{ exchange_data.RUB }}</td></tr>
+                </table>
+                <p class="small text-muted mt-2 mb-0">Обновлено: {{ now|date:"d/m/Y H:i" }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-5">
+    <div class="col-md-3"><div class="card stat-card shadow-sm p-3"><div class="d-flex align-items-center gap-3"><i class="bi bi-houses fs-2 text-primary"></i><div><div class="fs-4 fw-bold">{{ stats.total_properties }}</div><div class="text-muted small">Объектов</div></div></div></div></div>
+    <div class="col-md-3"><div class="card stat-card shadow-sm p-3"><div class="d-flex align-items-center gap-3"><i class="bi bi-handshake fs-2 text-success"></i><div><div class="fs-4 fw-bold">{{ stats.completed_deals }}</div><div class="text-muted small">Сделок закрыто</div></div></div></div></div>
+    <div class="col-md-3"><div class="card stat-card shadow-sm p-3"><div class="d-flex align-items-center gap-3"><i class="bi bi-people fs-2 text-warning"></i><div><div class="fs-4 fw-bold">{{ stats.clients }}</div><div class="text-muted small">Клиентов</div></div></div></div></div>
+    <div class="col-md-3"><div class="card stat-card shadow-sm p-3"><div class="d-flex align-items-center gap-3"><i class="bi bi-person-badge fs-2 text-info"></i><div><div class="fs-4 fw-bold">{{ stats.employees }}</div><div class="text-muted small">Сотрудников</div></div></div></div></div>
+</div>
+
+{% if latest_article %}
+<div class="card border-0 shadow-sm mb-5">
+    <div class="card-header bg-primary text-white"><i class="bi bi-newspaper"></i> Последняя новость</div>
+    <div class="card-body">
+        <h5>{{ latest_article.title }}</h5>
+        <p class="text-muted">{{ latest_article.summary }}</p>
+        <small class="text-muted">{{ latest_article.created_at|date:"d/m/Y" }}</small>
+        <a href="{% url 'properties:news_detail' latest_article.pk %}" class="btn btn-sm btn-outline-primary ms-3">Читать далее</a>
+    </div>
+</div>
+{% endif %}
+
+<h3 class="mb-3">Актуальные объекты</h3>
+<div class="row g-3">
+    {% for prop in featured_properties %}
+    <div class="col-md-4">
+        <div class="card property-card h-100 shadow-sm border-0">
+            <div class="card-body">
+                <span class="badge {% if prop.transaction_type == 'sale' %}bg-primary{% else %}bg-success{% endif %} mb-2">{{ prop.get_transaction_type_display }}</span>
+                <h6 class="fw-bold">{{ prop.title }}</h6>
+                <p class="text-muted small"><i class="bi bi-geo-alt"></i> {{ prop.city }}, {{ prop.address }}</p>
+                <p class="small">{{ prop.area }} м² | {{ prop.rooms }} комн.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <strong class="text-primary">${{ prop.price }}</strong>
+                    <a href="{% url 'properties:detail' prop.pk %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

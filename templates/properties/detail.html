@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}{{ property.title }}{% endblock %}
+{% block content %}
+<a href="{% url 'properties:list' %}" class="btn btn-sm btn-outline-secondary mb-3">← Назад</a>
+<div class="row g-4">
+<div class="col-md-8">
+    <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start">
+                <h2>{{ property.title }}</h2>
+                <div class="d-flex gap-2">
+                    {% if user.is_staff or user.role == 'employee' %}
+                    <a href="{% url 'properties:update' property.pk %}" class="btn btn-sm btn-outline-warning"><i class="bi bi-pencil"></i></a>
+                    {% if user.is_staff %}<a href="{% url 'properties:delete' property.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>{% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="d-flex gap-2 mb-3">
+                <span class="badge {% if property.transaction_type == 'sale' %}bg-primary{% else %}bg-success{% endif %} fs-6">{{ property.get_transaction_type_display }}</span>
+                <span class="badge {% if property.status == 'available' %}bg-success{% elif property.status == 'sold' %}bg-danger{% else %}bg-warning{% endif %} fs-6">{{ property.get_status_display }}</span>
+            </div>
+            <h3 class="text-primary">${{ property.price }}</h3>
+            <p class="text-muted">${{ property.price_per_sqm }}/м²</p>
+            <hr>
+            <div class="row g-3 mb-3">
+                <div class="col-4 text-center"><i class="bi bi-arrows-angle-expand fs-4 text-primary"></i><div class="fw-bold">{{ property.area }} м²</div><small class="text-muted">Площадь</small></div>
+                <div class="col-4 text-center"><i class="bi bi-door-open fs-4 text-primary"></i><div class="fw-bold">{{ property.rooms }}</div><small class="text-muted">Комнат</small></div>
+                {% if property.floor %}<div class="col-4 text-center"><i class="bi bi-building fs-4 text-primary"></i><div class="fw-bold">{{ property.floor }}/{{ property.total_floors }}</div><small class="text-muted">Этаж</small></div>{% endif %}
+            </div>
+            <p><i class="bi bi-geo-alt text-danger"></i> <strong>{{ property.address }}, {{ property.city }}</strong></p>
+            {% if property.year_built %}<p>Год постройки: <strong>{{ property.year_built }}</strong></p>{% endif %}
+            <hr>
+            <h5>Описание</h5>
+            <p>{{ property.description|linebreaks }}</p>
+            {% if property.tags.all %}
+            <div>{% for tag in property.tags.all %}<span class="badge bg-light text-dark border me-1">{{ tag }}</span>{% endfor %}</div>
+            {% endif %}
+            <hr>
+            <div class="d-flex justify-content-between text-muted small">
+                <span>Обновлено: {{ property.updated_at|date:"d/m/Y H:i" }}</span>
+                <span>Добавлено: {{ property.created_at|date:"d/m/Y" }}</span>
+                <span><i class="bi bi-eye"></i> {{ property.views_count }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-4">
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-primary text-white">Информация</div>
+        <div class="card-body">
+            <p><strong>Категория:</strong> {{ property.category }}</p>
+            {% if property.agent %}<p><strong>Агент:</strong> {{ property.agent.full_name }}</p>{% endif %}
+        </div>
+    </div>
+    {% if similar %}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header">Похожие объекты</div>
+        <ul class="list-group list-group-flush">
+            {% for s in similar %}
+            <li class="list-group-item d-flex justify-content-between">
+                <a href="{% url 'properties:detail' s.pk %}">{{ s.title }}</a>
+                <small class="text-primary">${{ s.price }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+</div>
+{% endblock %}
