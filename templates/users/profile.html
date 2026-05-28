@@ -25,10 +25,28 @@
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-header">Информация об аккаунте</div>
         <div class="card-body">
+            <!-- Аватар пользователя -->
+            <div class="text-center mb-3">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}"
+                         alt="Фото профиля"
+                         class="rounded-circle"
+                         style="width:120px;height:120px;object-fit:cover;border:3px solid #dee2e6;">
+                {% else %}
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto"
+                         style="width:120px;height:120px;background:#e9ecef;border:3px solid #dee2e6;">
+                        <i class="bi bi-person fs-1 text-muted"></i>
+                    </div>
+                {% endif %}
+                <div class="mt-2 fw-bold">{{ user.get_full_name|default:user.username }}</div>
+            </div>
+            <hr>
             <p><strong>Логин:</strong> {{ user.username }}</p>
             <p><strong>Роль:</strong> {{ user.get_role_display }}</p>
             <p><strong>Дата регистрации:</strong> {{ user.created_at|date:"d/m/Y" }}</p>
             {% if user.birth_date %}<p><strong>Дата рождения:</strong> {{ user.birth_date|date:"d/m/Y" }}</p>{% endif %}
+            {% if user.phone %}<p><strong>Телефон:</strong> {{ user.phone }}</p>{% endif %}
+            {% if user.address %}<p><strong>Адрес:</strong> {{ user.address }}</p>{% endif %}
         </div>
     </div>
     {% if deals %}
