@@ -5,6 +5,11 @@
 <div class="row g-4">
 <div class="col-md-8">
     <div class="card border-0 shadow-sm">
+        {% if property.main_image %}
+        <img src="{{ property.main_image.url }}" class="card-img-top"
+             style="height:300px;object-fit:cover;border-radius:14px 14px 0 0"
+             alt="{{ property.title }}">
+        {% endif %}
         <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-start">
                 <h2>{{ property.title }}</h2>

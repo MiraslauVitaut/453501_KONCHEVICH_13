@@ -35,6 +35,16 @@
 {% for prop in page_obj %}
 <div class="col-md-4">
     <div class="card property-card h-100 border-0 shadow-sm">
+        {% if prop.main_image %}
+        <img src="{{ prop.main_image.url }}" class="card-img-top"
+             style="height:180px;object-fit:cover;border-radius:14px 14px 0 0"
+             alt="{{ prop.title }}">
+        {% else %}
+        <div class="d-flex align-items-center justify-content-center"
+             style="height:180px;background:linear-gradient(135deg,#e8f4f8,#f0f8ff);border-radius:14px 14px 0 0">
+            <i class="bi bi-houses" style="font-size:3rem;color:var(--primary);opacity:.3"></i>
+        </div>
+        {% endif %}
         <div class="card-body">
             <div class="d-flex gap-2 mb-2">
                 <span class="badge {% if prop.transaction_type == 'sale' %}bg-primary{% else %}bg-success{% endif %}">{{ prop.get_transaction_type_display }}</span>

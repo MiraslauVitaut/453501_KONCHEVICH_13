@@ -1,6 +1,28 @@
 {% extends 'base.html' %}
 {% block title %}РиэлтерПлюс — Главная{% endblock %}
 {% block content %}
+<!-- Таймзона + Календарь (требование ЛР5) -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Время UTC (хранится в БД)</small>
+            <div class="font-monospace fw-bold mt-1">{{ utc_now|date:"d/m/Y H:i:s" }} UTC</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted"><i class="bi bi-geo-alt me-1"></i>Europe/Minsk (отображение)</small>
+            <div class="font-monospace fw-bold mt-1" style="color:var(--primary)">{{ local_now|date:"d/m/Y H:i:s" }}</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3">
+            <small class="text-muted"><i class="bi bi-calendar3 me-1"></i>Календарь (Python)</small>
+            <pre class="mb-0 mt-1" style="font-size:.72rem;line-height:1.3">{{ text_calendar }}</pre>
+        </div>
+    </div>
+</div>
+
 <div class="row g-4 mb-5">
     <div class="col-md-8">
         <div class="p-5 rounded-3" style="background: linear-gradient(135deg,#1a3a5c,#2c5282); color:white;">

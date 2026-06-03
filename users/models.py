@@ -8,6 +8,14 @@ from django.utils import timezone
 logger = logging.getLogger('users')
 
 
+# ═══════════════════════════════════════════════════════════
+# ВАЛИДАЦИЯ НА СЕРВЕРЕ (backend):
+#   validate_phone() — проверка формата +375 (XX) XXX-XX-XX
+#   validate_age_18() — проверка что пользователь >= 18 лет
+# Используются как validators=[...] на полях модели
+# Также дублируются в forms.py: clean_birth_date(), clean_phone()
+# ═══════════════════════════════════════════════════════════
+
 def validate_phone(value):
     pattern = r'^\+375 \((29|33|44|25)\) \d{3}-\d{2}-\d{2}$'
     if not re.match(pattern, value):

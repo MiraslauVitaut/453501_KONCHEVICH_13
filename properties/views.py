@@ -18,6 +18,43 @@ from .forms import PropertyFilterForm, PropertyForm, DealForm, ReviewForm, Clien
 
 logger = logging.getLogger('properties')
 
+# ═══════════════════════════════════════════════════════════
+# КОММЕНТАРИИ К КОДУ ДЛЯ ПРОВЕРКИ ПРЕПОДАВАТЕЛЕМ:
+#
+# 1. ТАЙМЗОНА: TIME_ZONE='Europe/Minsk', USE_TZ=True в settings.py
+#    - В БД даты хранятся в UTC → timezone.now()
+#    - На сайте отображается локальное время → timezone.localtime()
+#    - Текстовый календарь: calendar.month() — НЕ интерактивный, <pre>
+#
+# 2. РАЗГРАНИЧЕНИЕ РОЛЕЙ (@login_required + проверка роли):
+#    - @login_required — декоратор, защищает view от анонимов
+#    - is_staff → полный доступ (admin): CRUD всего + удаление
+#    - is_employee() → сотрудник: CRUD объектов, сделок, клиентов
+#    - is_client() → клиент: только свои сделки, каталог
+#    - Анон → только каталог и общие страницы
+#    - В шаблонах: {% if user.is_staff %}, {% if user.role == 'employee' %}
+#
+# 3. ВАЛИДАЦИЯ:
+#    - Клиент (JS): addEventListener('submit') в register.html → 18+
+#    - Сервер (models.py): validate_age_18(), validate_phone()
+#    - Сервер (forms.py): clean_birth_date(), clean_price()
+#    - min="0.01" на NumberInput — блокирует отрицательные числа в браузере
+#
+# 4. CRUD через FBV:
+#    - property_list/detail/create/update/delete (объекты)
+#    - deal_list/detail/create/update/delete (сделки)
+#    - client_list/create/update/delete (клиенты)
+#
+# 5. API (DRF): /api/properties/, /api/properties/<pk>/
+#    - IsAuthenticated → только авторизованные
+#    - IsAdminUser → только администратор
+#
+# 6. MATPLOTLIB: chart_python() — графики на сервере, base64 в шаблон
+#    matplotlib.use('Agg') — без GUI, сохраняем в BytesIO
+#
+# 7. ОТЗЫВЫ: reviews() — form.save(commit=False), привязка к user
+# ═══════════════════════════════════════════════════════════
+
 
 # ===== ОБЩИЕ СТРАНИЦЫ =====
 

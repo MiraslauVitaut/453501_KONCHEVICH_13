@@ -7,6 +7,16 @@ from users.models import CustomUser
 logger = logging.getLogger('properties')
 
 
+# ═══════════════════════════════════════════════════════════
+# МОДЕЛИ — verbose_name используется в ADMIN ПАНЕЛИ
+# Связи:
+#   PropertyCategory -1:N-> Property (ForeignKey)
+#   Property -N:M-> PropertyTag (ManyToManyField)
+#   Employee -1:1-> CustomUser (OneToOneField)
+#   Client -1:1-> CustomUser (OneToOneField, необязательно)
+#   Deal -N:1-> Property, Client, Employee (ForeignKey)
+# ═══════════════════════════════════════════════════════════
+
 class PropertyCategory(models.Model):
     name = models.CharField(max_length=100, verbose_name='Название категории')
     description = models.TextField(blank=True, verbose_name='Описание')
@@ -143,6 +153,7 @@ class Property(models.Model):
     tags = models.ManyToManyField('PropertyTag', blank=True, related_name='properties', verbose_name='Теги')
     is_published = models.BooleanField(default=True, verbose_name='Опубликовано')
     views_count = models.PositiveIntegerField(default=0, verbose_name='Просмотры')
+    main_image = models.ImageField(upload_to='properties/', blank=True, null=True, verbose_name='Главное фото')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

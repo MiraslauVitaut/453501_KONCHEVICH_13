@@ -154,7 +154,8 @@ class DealModelTest(TestCase):
 
 class PromoCodeModelTest(TestCase):
     def test_is_current_active(self):
-        today = date.today()
+        from django.utils import timezone
+        today = timezone.now().date()
         p = PromoCode(code='T1', discount_percent=10,
                       valid_from=today, valid_to=today+timedelta(days=10), is_active=True)
         self.assertTrue(p.is_current)

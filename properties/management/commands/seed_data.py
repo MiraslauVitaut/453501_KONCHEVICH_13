@@ -29,8 +29,6 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # Если данные уже есть — пропускаем seed (сохраняем пользовательские данные)
         if options.get('skip_if_exists'):
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
             if User.objects.filter(username='admin').exists():
                 self.stdout.write('✓ База данных уже заполнена — пропускаем seed_data.')
                 return
@@ -130,6 +128,8 @@ class Command(BaseCommand):
             ('Лебедева', 'Ольга', 'Николаевна', '+375 (44) 606-77-88', 'olga.l@mail.by'),
             ('Смирнов', 'Егор', 'Владимирович', '+375 (29) 607-88-99', 'egor.s@mail.by'),
             ('Тихонова', 'Наталья', 'Ивановна', '+375 (33) 608-99-00', 'natalia.t@mail.by'),
+            ('Новиков', 'Виктор', 'Игоревич', '+375 (44) 609-11-22', 'viktor.n@mail.by'),
+            ('Белова', 'Светлана', 'Петровна', '+375 (29) 610-33-44', 'svetlana.b@mail.by'),
         ]
         clients = []
         for ln, fn, mn, phone, email in clients_data:
@@ -193,6 +193,8 @@ class Command(BaseCommand):
             (4, 5, 0, 'rent', 'active', 1200, 120, date(2024, 4, 15), date(2024, 4, 20)),
             (3, 6, 2, 'sale', 'completed', 380000, 11400, date(2024, 5, 10), date(2024, 5, 15)),
             (8, 7, 1, 'sale', 'pending', 195000, 5850, date(2024, 6, 1), None),
+            (9, 8, 0, 'sale', 'completed', 28000, 840, date(2024, 6, 15), date(2024, 6, 20)),
+            (5, 9, 1, 'sale', 'completed', 45000, 1350, date(2024, 7, 1), date(2024, 7, 5)),
         ]
         for pi, ci, ei, dtype, status, amount, comm, cdate, sdate in deals_data:
             Deal.objects.get_or_create(
